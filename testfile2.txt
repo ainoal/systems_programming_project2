@@ -1,5 +1,0 @@
-Toinen tiedosto: rivi 1
-Rivi 2
-Rivi 3
-RIvi 4
-Vika rivi :)
