@@ -1,6 +1,6 @@
 /*******************************************************************/
 /* CT30A3370 Käyttöjärjestelmät ja systeemiohjelmointi
- * my-cat.c
+ * my-grep.c
  * Aino Liukkonen
  * 21.4.2021
  */
@@ -36,6 +36,30 @@ void grepFile(char *searchterm, char *fileName) {
 	fclose(fp);
 }
 
+/* Function grepStdio reads one line from stdio and prints it if it includes
+the search term. After that, user can input another string if they want to.
+To end the execution of grepStdio(), user needs to press ctrl + d. It is
+also possible to copy + paste text on the shell and then the function goes
+through all lines and prints the ones that include the search term. */
+
+void grepStdio(char *searchterm) {
+	char *buffer;
+	char *result;
+	size_t bufferSize = 32;
+
+	if((buffer = (char *)malloc(bufferSize * sizeof(char))) == NULL) {
+		perror("Malloc error\n");
+		exit(1);
+	}
+	
+	while (getline(&buffer, &bufferSize, stdin) != -1) {
+		result = strstr(buffer, searchterm);
+		if(result != NULL) {
+			printf("%s", buffer);
+		}	
+	}
+}
+
 int main (int argc, char *argv[]) {
 	int i;
 
@@ -44,7 +68,7 @@ int main (int argc, char *argv[]) {
 		exit(1);
 	} 
 	else if(argc == 2) {
-		printf("Read from stdin\n");		// !!!!!!!!!!!!!!!
+		grepStdio(argv[1]);
 	}
 
 	for(i=2; i<argc; i++) {
@@ -55,3 +79,4 @@ int main (int argc, char *argv[]) {
 }
 
 /*******************************************************************/
+/* eof */
