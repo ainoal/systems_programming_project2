@@ -44,11 +44,11 @@ void allocate(RLE_LIST *rleList, int initialSize) {
 
 /* Source of inspiration:
 https://gist.github.com/marcetcheverry/991042 */
-void mapRead(char fileName[]) {    
+MAPPED_FILE mapRead(char fileName[]) {    
     //const char *filepath = "/tmp/mmapped.bin";
     struct stat fileInfo = {0};
+	MAPPED_FILE mappedFile;
 	int iFile;
-	char *map;
     
     if ((iFile = open(fileName, O_RDONLY)) == 0) {
         perror("my-zip: error opening file");					// !!!!!!!!!!!!!!!!!!!!!!!!
@@ -66,28 +66,23 @@ void mapRead(char fileName[]) {
     }
     
     printf("File size is %ji\n", (intmax_t)fileInfo.st_size);
-    
-    map = mmap(0, fileInfo.st_size, PROT_READ, MAP_SHARED, iFile, 0);
 
-    if (map == MAP_FAILED) {
+	mappedFile.fileSize = fileInfo.st_size;
+    
+    mappedFile.fileData = mmap(0, fileInfo.st_size, PROT_READ, MAP_SHARED, iFile, 0);
+
+    if (mappedFile.fileData == MAP_FAILED) {
         close(iFile);
         perror("Error mmapping the file");
-        exit(EXIT_FAILURE);
-    }
-    
-    for (off_t i = 0; i < fileInfo.st_size; i++)
-    {
-        printf("Found character %c at %ji\n", map[i], (intmax_t)i);
+        exit(1);
     }
     
     // Don't forget to free the mmapped memory
-    if (munmap(map, fileInfo.st_size) == -1)
-    {
-        close(iFile);
-        perror("Error un-mmapping the file");
-        exit(EXIT_FAILURE);
-    }
-    close(iFile);   
+
+
+    close(iFile);  
+
+	return  mappedFile;
 }
 
 /*******************************************************************/

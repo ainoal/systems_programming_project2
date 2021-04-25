@@ -6,10 +6,12 @@
  */
 /*******************************************************************/
 
+#define TRUE 1
+#define FALSE 0
+#define INITIAL_MEMORY 10000
+
 /* The highest quota of system memory allowed to be used */
 #define MAX_MEMORY_USAGE 0.1
-
-#define INITIAL_MEMORY 10000
 
 struct Rle {
 	int charAmount;
@@ -37,6 +39,6 @@ typedef struct RleList RLE_LIST;
 
 unsigned long long getUsableMemory();
 void allocate(RLE_LIST *rleList, int initialSize);
-
+MAPPED_FILE mapRead(char fileName[]);
 /*******************************************************************/
 /* eof */

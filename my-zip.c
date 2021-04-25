@@ -8,11 +8,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/mman.h>
 #include "ziplib.h"
 
 int main (int argc, char *argv[]) {
 	unsigned long long maxMemory; // Amount of memory that can be given to output usage
 	RLE_LIST output;
+	MAPPED_FILE mappedFile;
 	int argNumber;
 	long pageSize;
 
@@ -28,11 +31,12 @@ int main (int argc, char *argv[]) {
 		allocate(&output, INITIAL_MEMORY);
 
 		// TODO calculate max page size: BETTER EXPLANATION HERE!
-		pageSize = maxMemory / sizeof(RLE*) - 1;		
+		pageSize = maxMemory / sizeof(RLE*) - 1;
+		printf("Page size: %ld\n", pageSize); 	
 
 		// TODO Map files to memory
-        for (int argumentNumber = 1; argNumber < argc; argNumber++) {
-            mapped_file = map_file(argv[argument_number]);
+        for (argNumber = 1; argNumber < argc; argNumber++) {
+            mappedFile = mapRead(argv[argNumber]);
             if (argNumber == argc -1) {
 				/* This is the last file to be zipped
 				--> write all chars to output (for other files, don't write
@@ -41,7 +45,14 @@ int main (int argc, char *argv[]) {
             }
 
 			// TODO Compress
+            //zip(&mappedFile, &output, pageSize, lastFile);
+
 			// TODO Remember to free memory
+
+			if (munmap(mappedFile.fileData, mappedFile.fileSize) == -1) {
+				perror("Error un-mmapping the file");
+				exit(1);
+			}
         }
 		
 	}
