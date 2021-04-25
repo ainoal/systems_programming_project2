@@ -36,7 +36,7 @@ void grepFile(char *searchterm, char *fileName) {
 	fclose(fp);
 }
 
-/* Function grepStdio reads one line from stdio and prints it if it includes
+/* Function grepStdio() reads one line from stdio and prints it if it includes
 the search term. After that, user can input another string if they want to.
 To end the execution of grepStdio(), user needs to press ctrl + d. It is
 also possible to copy + paste text on the shell and then the function goes
