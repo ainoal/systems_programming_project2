@@ -35,15 +35,15 @@ unsigned long long getUsableMemory() {
 void allocate(RLE_LIST *rleList, int initialSize) {
     rleList->listSize = initialSize;
     rleList->listLength = 0;
-    if ((rleList->data = (RLE*)calloc(initialSize, sizeof(RLE))) == NULL) {
+    if ((rleList->rleData = (RLE*)calloc(initialSize, sizeof(RLE))) == NULL) {
         perror("Calloc failed");								// !!!!!!!!!!!!!!!!!!!!!
         exit(1);
     }
 	printf("Calloc finished\n");
 }
 
-/* Source of inspiration:
-https://gist.github.com/marcetcheverry/991042 */
+/* EXPLAIN WHY THIS FUNCTION IS NEEDED!!!
+Source of inspiration: https://gist.github.com/marcetcheverry/991042 */
 MAPPED_FILE mapRead(char fileName[]) {    
     //const char *filepath = "/tmp/mmapped.bin";
     struct stat fileInfo = {0};
@@ -83,6 +83,88 @@ MAPPED_FILE mapRead(char fileName[]) {
     close(iFile);  
 
 	return  mappedFile;
+}
+
+void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile) {
+    long start = 0;
+    long end = 0;
+	RLE element;
+	char letter;
+	int count;
+	int position;
+	char *letters;
+	// int i (=output->listLength -1);
+
+	// letters[] = mappedFile->fileData;
+
+    while (TRUE) {
+        /* Calculate start and end position based on the page. */
+        if (end != 0) {
+            start = end + 1;
+        } else {
+            start = 0;
+        }
+
+        if (pageSize < mappedFile->fileSize - end) {
+            end = end + pageSize;
+        } else {
+            end = mappedFile->fileSize;
+        }
+        /* Start compression progress. */
+
+		/* Compress given string with Run Length Encoding. */
+
+		letters = mappedFile->fileData;
+
+		/* Continue from the last item if there is already data in the output
+		   and start buffer from the beginning. */
+		if (output->listLength > 0) {
+		    letter = output->rleData[output->listLength - 1].character;
+		    count = output->rleData[output->listLength - 1].charAmount;
+		    output->listLength = 0;
+		}
+		else {
+		    letter = letters[start];
+		    count = 0;
+		}
+		/* LITTLE EXPLANATION HERE */
+		for (position = start; position <= end; position++) {
+		    if (letters[position] != letter) {
+		        element.character = letter;
+		        element.charAmount = count;
+		        /* Add struct to list of structs. */
+		        //append(output, &element);
+		        count = 0;
+		        letter = letters[position];
+		    }
+		    count++;
+		}
+		/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+		if (letters[end] != '\0') {
+		    element.character = letters[end];
+		    element.charAmount = count;
+			/* Add struct to list of structs. */
+		    //append(output, &element);
+		}
+
+
+        if (end < mappedFile->fileSize) {
+            /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+            if (output->listLength > 1) {
+                fwrite(output->rleData, sizeof(RLE), output->listLength - 1, stdout);
+            }
+        }
+        else {
+			/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+            if (lastFile == FALSE) {
+            	fwrite(output->rleData, sizeof(RLE), output->listLength - 1, stdout);
+            }
+            else {
+                /* Write finally all bytes. */
+            }
+            break;
+        }
+    }
 }
 
 /*******************************************************************/

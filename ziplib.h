@@ -30,7 +30,7 @@ typedef struct MappedFile MAPPED_FILE;
 https://stackoverflow.com/questions/3318410/pragma-pack-effect */
 #pragma pack (push,1)
 struct RleList {
-	RLE *data;
+	RLE *rleData;
 	long listSize;		// Physical size of the list
 	long listLength;	// Length in nodes
 }; 
@@ -40,5 +40,7 @@ typedef struct RleList RLE_LIST;
 unsigned long long getUsableMemory();
 void allocate(RLE_LIST *rleList, int initialSize);
 MAPPED_FILE mapRead(char fileName[]);
+void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile);
+
 /*******************************************************************/
 /* eof */
