@@ -86,9 +86,22 @@ MAPPED_FILE mapRead(char fileName[]) {
 }
 
 void appendRleList(RLE_LIST* rleList, RLE* rle) {
+	int newSize;
+
+	/* Make sure that there is enough space for a new RLE element */
     if (rleList->listLength + 1 > rleList->listSize) {
-		// Check that there is enough space for a new RLE element
-        // If not, then expand the RLE list so that
+    	/* If not, then expand the RLE list */
+
+		/* !!! */
+		newSize = (rleList->listLength + 1) * sizeof(RLE*);
+
+		if ((rleList->rleData = (RLE*)realloc(rleList->rleData, newSize)) == NULL) {
+			perror("Realloc error");
+			exit(1);
+		}
+
+		/* Update new physical size in structs */
+		rleList->listSize = newSize / sizeof(RLE*);
     }
 
     /* Add an RLE element to the list */
@@ -124,7 +137,6 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
         } else {
             end = mappedFile->fileSize;
         }
-        /* Start compression progress. */
 
 		/* Compress given string with Run Length Encoding. */
 

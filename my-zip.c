@@ -57,7 +57,8 @@ int main (int argc, char *argv[]) {
 				exit(1);
 			}
         }
-		
+
+		// TODO Free memory
 	}
 
 	printf("The end\n");
