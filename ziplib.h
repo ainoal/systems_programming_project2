@@ -40,6 +40,7 @@ typedef struct RleList RLE_LIST;
 unsigned long long getUsableMemory();
 void allocate(RLE_LIST *rleList, int initialSize);
 MAPPED_FILE mapRead(char fileName[]);
+void appendRleList(RLE_LIST* rleList, RLE* rle);
 void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile);
 
 /*******************************************************************/

@@ -85,6 +85,20 @@ MAPPED_FILE mapRead(char fileName[]) {
 	return  mappedFile;
 }
 
+void appendRleList(RLE_LIST* rleList, RLE* rle) {
+    if (rleList->listLength + 1 > rleList->listSize) {
+		// Check that there is enough space for a new RLE element
+        // If not, then expand the RLE list so that
+    }
+
+    /* Add an RLE element to the list */
+    rleList->rleData[rleList->listLength].character = rle->character;
+    rleList->rleData[rleList->listLength].charAmount = rle->charAmount;
+    rleList->listLength++;
+}
+
+/* The actual paging and compressing of the file */
+/* HERE OR IN MY-ZIP.C????????? */
 void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile) {
     long start = 0;
     long end = 0;
@@ -133,7 +147,7 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
 		        element.character = letter;
 		        element.charAmount = count;
 		        /* Add struct to list of structs. */
-		        //append(output, &element);
+		        appendRleList(output, &element);
 		        count = 0;
 		        letter = letters[position];
 		    }
@@ -144,7 +158,7 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
 		    element.character = letters[end];
 		    element.charAmount = count;
 			/* Add struct to list of structs. */
-		    //append(output, &element);
+		    appendRleList(output, &element);
 		}
 
 
