@@ -16,6 +16,6 @@ my-unzip: my-unzip.o ziplib.o
 my-unzip.o: my-unzip.c
 	gcc my-unzip.c -c -o my-unzip.o -Wall -Werror
 
-ziplib.o: my-zip-lib.c
+ziplib.o: ziplib.c
 	gcc ziplib.c -c -Wall -Werror
 
