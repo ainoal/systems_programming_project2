@@ -17,7 +17,6 @@
 
 #include "ziplib.h"
 
-
 /* Reference: 
 https://stackoverflow.com/questions/2513505/how-to-get-available-memory-c-g/26639774 */
 unsigned long long getUsableMemory() {
@@ -29,17 +28,6 @@ unsigned long long getUsableMemory() {
 	memory = pages * pageSize * MAX_MEMORY_USAGE;
 
     return memory;
-}
-
-/* Allocate memory for a new list of rle structs. */
-void allocate(RLE_LIST *rleList, int initialSize) {
-    rleList->listSize = initialSize;
-    rleList->listLength = 0;
-    if ((rleList->rleData = (RLE*)calloc(initialSize, sizeof(RLE))) == NULL) {
-        perror("Calloc failed");								// !!!!!!!!!!!!!!!!!!!!!
-        exit(1);
-    }
-	printf("Calloc finished\n");
 }
 
 /* EXPLAIN WHY THIS FUNCTION IS NEEDED!!!
@@ -85,6 +73,20 @@ MAPPED_FILE mapRead(char fileName[]) {
 	return  mappedFile;
 }
 
+/*******************************************************************/
+/* Zip functions */
+
+/* Allocate memory for a new list of rle structs. */
+void allocate(RLE_LIST *rleList, int initialSize) {
+    rleList->listSize = initialSize;
+    rleList->listLength = 0;
+    if ((rleList->rleData = (RLE*)calloc(initialSize, sizeof(RLE))) == NULL) {
+        perror("Calloc failed");								// !!!!!!!!!!!!!!!!!!!!!
+        exit(1);
+    }
+	printf("Calloc finished\n");
+}
+
 void appendRleList(RLE_LIST* rleList, RLE* rle) {
 	int newSize;
 
@@ -110,8 +112,7 @@ void appendRleList(RLE_LIST* rleList, RLE* rle) {
     rleList->listLength++;
 }
 
-/* The actual paging and compressing of the file */
-/* HERE OR IN MY-ZIP.C????????? */
+/* The actual paging and zipping of the file(s) */
 void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile) {
     long start = 0;
     long end = 0;
@@ -194,6 +195,84 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
             }
             break;
         }
+    }
+}
+
+/*******************************************************************/
+/* Unzip functions */
+
+/* Allocate new list of STRING structs. */
+void allocateString(STRING *string, int initialSize) {
+    string->stringSize = initialSize;
+    string->stringLength = 0;
+    if ((string->stringData = (char*)calloc(initialSize, sizeof(char))) == NULL) {
+        perror("Calloc error");
+        exit(1);
+    }
+}
+
+/* The actual unzipping of the file(s) */
+void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize) {
+    int *pLength;
+    char character;
+    char *pCharacter;
+	STRING *string;
+    int length;
+	int byte;
+	int page;
+	int add;
+	int i;
+
+    /* Proceed two 5 bytes at a time */
+    for (byte = 0; byte < mappedFile.fileSize; byte += 5) {
+
+        /* !!! */
+        pLength = (int*)(mappedFile.fileData + byte);
+        pCharacter = (char*)(mappedFile.fileData + byte + 4);
+        length = *pLength;
+        character = *pCharacter;
+
+        /* If amount of amount of characters to be printed is greater than buffer,
+        then generate characters in chunks */
+        if (length > bufferSize) {
+            //print_buffer(&buffer);
+			printf("Print buffer\n");
+            for (page = 0; page < length; page += bufferSize) {
+                if (length - page < bufferSize) {
+					add = length - page;
+                }
+                else {
+					add = bufferSize;
+                }
+
+				string = &buffer;
+				/* Expand string if needed for generated letters. */
+				if (bufferSize > string->stringSize - string->stringLength) {
+					//expand string
+				}
+				/* Create letters */
+				for (i = string->stringLength; i < add + string->stringLength; i++) {
+					string->stringData[i] = character;
+				}
+				string->stringLength += add;
+
+                //print buffer(&buffer);
+            }
+        }
+        /* If there is smaller than buffer amounts of character but buffer is full
+           print buffer first and then generate characters. */
+        else if (buffer.stringLength + length > bufferSize) {
+            // print buffer(&buffer);
+            //generate_chars(&buffer, character, length);
+        }
+        /* If there is still room in the buffer, just generate characters. */
+        else {
+            //generate_chars(&buffer, character, length);
+        }
+    }
+    /* If there is character left in the buffer print them. */
+    if (buffer.stringLength > 0) {
+        //print_buffer(&buffer);
     }
 }
 

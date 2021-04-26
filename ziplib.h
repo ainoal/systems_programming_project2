@@ -23,8 +23,15 @@ struct MappedFile {
     int fileSize;
 };
 
+struct String {
+    char* stringData;
+    int stringSize;		// Physical size of the string
+    int stringLength;	// Virtual size of the string
+};
+
 typedef struct Rle RLE;
 typedef struct MappedFile MAPPED_FILE;
+typedef struct String STRING;
 
 /* Disable padding in struct RleList with pragma pack
 https://stackoverflow.com/questions/3318410/pragma-pack-effect */
@@ -38,10 +45,14 @@ typedef struct RleList RLE_LIST;
 #pragma pack(pop)
 
 unsigned long long getUsableMemory();
-void allocate(RLE_LIST *rleList, int initialSize);
 MAPPED_FILE mapRead(char fileName[]);
+
+void allocate(RLE_LIST *rleList, int initialSize);
 void appendRleList(RLE_LIST* rleList, RLE* rle);
 void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile);
+
+void allocateString(STRING* string, int initialSize);
+void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize);
 
 /*******************************************************************/
 /* eof */
