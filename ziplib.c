@@ -95,10 +95,10 @@ void appendRleList(RLE_LIST* rleList, RLE* rle) {
 		/* !!! */
 		newSize = (rleList->listLength + 1) * sizeof(RLE*);
 
-		if ((rleList->rleData = (RLE*)realloc(rleList->rleData, newSize)) == NULL) {
+		/*if ((rleList->rleData = (RLE*)realloc(rleList->rleData, newSize)) == NULL) {
 			perror("Realloc error");
 			exit(1);
-		}
+		}*/
 
 		/* Update new physical size in structs */
 		rleList->listSize = newSize / sizeof(RLE*);
@@ -123,6 +123,8 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
 	// int i (=output->listLength -1);
 
 	// letters[] = mappedFile->fileData;
+
+	printf("zipping\n");
 
     while (TRUE) {
         /* Calculate start and end position based on the page. */
@@ -175,6 +177,7 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
 
 
         if (end < mappedFile->fileSize) {
+			
             /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
             if (output->listLength > 1) {
                 fwrite(output->rleData, sizeof(RLE), output->listLength - 1, stdout);
@@ -185,8 +188,9 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
             if (lastFile == FALSE) {
             	fwrite(output->rleData, sizeof(RLE), output->listLength - 1, stdout);
             }
-            else {
-                /* Write finally all bytes. */
+            else if (lastFile == TRUE) {
+                /* Write all bytes */
+				fwrite(output->rleData, sizeof(RLE), output->listLength, stdout);
             }
             break;
         }

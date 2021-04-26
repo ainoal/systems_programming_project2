@@ -53,7 +53,7 @@ int main (int argc, char *argv[]) {
 			// TODO Remember to free memory
 
 			if (munmap(mappedFile.fileData, mappedFile.fileSize) == -1) {
-				perror("Error un-mmapping the file");
+				perror("Error munmapping the file");
 				exit(1);
 			}
         }
