@@ -53,6 +53,7 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
 
 void allocateString(STRING* string, int initialSize);
 void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize);
+void expandString(STRING* string, int reqSize, unsigned long long maxMemory);
 
 /*******************************************************************/
 /* eof */

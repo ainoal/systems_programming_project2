@@ -30,8 +30,7 @@ unsigned long long getUsableMemory() {
     return memory;
 }
 
-/* EXPLAIN WHY THIS FUNCTION IS NEEDED!!!
-Source of inspiration: https://gist.github.com/marcetcheverry/991042 */
+/* Source of inspiration: https://gist.github.com/marcetcheverry/991042 */
 MAPPED_FILE mapRead(char fileName[]) {    
     //const char *filepath = "/tmp/mmapped.bin";
     struct stat fileInfo = {0};
@@ -156,7 +155,7 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
 		    letter = letters[start];
 		    count = 0;
 		}
-		/* LITTLE EXPLANATION HERE */
+		/*  */
 		for (position = start; position <= end; position++) {
 		    if (letters[position] != letter) {
 		        element.character = letter;
@@ -211,6 +210,26 @@ void allocateString(STRING *string, int initialSize) {
     }
 }
 
+void expandString(STRING* string, int reqSize, unsigned long long maxMemory) {
+	int newSize;
+
+    if (reqSize > maxMemory) {
+        printf("Can't allocate more than defined max memory\n");
+        exit(1);
+    }
+    newSize = reqSize * sizeof(char*) * 2;
+    if (newSize > maxMemory / sizeof(char*)) {
+        newSize = (int)(maxMemory / sizeof(char*));
+    }
+
+    if ((string->stringData = (char*)realloc(string->stringData, newSize)) == NULL) {
+        printf("Cannot allocate more memory\n");
+        exit(1);
+    }
+    /* Update new physical size */
+    string->stringSize = newSize / sizeof(char*);
+}
+
 /* The actual unzipping of the file(s) */
 void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize) {
     int *pLength;
@@ -232,48 +251,55 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
         length = *pLength;
         character = *pCharacter;
 
-        /* If amount of amount of characters to be printed is greater than buffer,
+
+        /* If  amount of characters to be printed is greater than buffer,
         then generate characters in chunks */
         if (length > bufferSize) {
-            //print_buffer(&buffer);
+            //printBuffer(&buffer);
 			printf("Print buffer\n");
             for (page = 0; page < length; page += bufferSize) {
                 if (length - page < bufferSize) {
+					printf("if\n");
 					add = length - page;
                 }
                 else {
+					printf("else\n");
 					add = bufferSize;
                 }
 
 				string = &buffer;
-				/* Expand string if needed for generated letters. */
-				if (bufferSize > string->stringSize - string->stringLength) {
-					//expand string
+
+				/* Expand string if needed for generated letters */
+				if (add > string->stringSize - string->stringLength) {
+					expandString(string, string->stringLength + add, bufferSize);
 				}
+
 				/* Create letters */
 				for (i = string->stringLength; i < add + string->stringLength; i++) {
 					string->stringData[i] = character;
 				}
+				printf("I'm here\n");
 				string->stringLength += add;
 
-                //print buffer(&buffer);
+                //printBuffer(&buffer);
             }
         }
-        /* If there is smaller than buffer amounts of character but buffer is full
-           print buffer first and then generate characters. */
+        /* !!!!!!!!!!!!!!!!!! */
         else if (buffer.stringLength + length > bufferSize) {
-            // print buffer(&buffer);
-            //generate_chars(&buffer, character, length);
+            //createChars(&buffer, character, length);
         }
-        /* If there is still room in the buffer, just generate characters. */
+        /* If there is still room in the buffer, just generate characters */
         else {
-            //generate_chars(&buffer, character, length);
+            //createChars(&buffer, character, length);
         }
     }
-    /* If there is character left in the buffer print them. */
+    /* If there is character left in the buffer print them */
     if (buffer.stringLength > 0) {
-        //print_buffer(&buffer);
+		printf("final if\n");
+        //printBuffer(&buffer);
     }
+
+	printf("end\n");
 }
 
 /*******************************************************************/
