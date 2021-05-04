@@ -230,6 +230,26 @@ void expandString(STRING* string, int reqSize, unsigned long long maxMemory) {
     string->stringSize = newSize / sizeof(char*);
 }
 
+void printBuffer(STRING *string) {
+    fwrite(string->stringData, sizeof(char), string->stringLength, stdout);
+	printf("%s", string->stringData);
+    string->stringLength = 0;
+}
+
+void createChars(STRING* string, char character, int charAmount, unsigned long long maxMemory) {
+	int i;
+
+    /* Expand string if needed for generated letters */
+    if (charAmount > string->stringSize - string->stringLength) {
+        expandString(string, string->stringLength + charAmount, maxMemory);
+    }
+    /* Generate letters */
+    for (i = string->stringLength; i < charAmount + string->stringLength; i++) {
+        string->stringData[i] = character;
+    }
+    string->stringLength += charAmount;
+}
+
 /* The actual unzipping of the file(s) */
 void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize) {
     int *pLength;
@@ -242,7 +262,7 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
 	int add;
 	int i;
 
-    /* Proceed two 5 bytes at a time */
+    /* Proceed two 5 bytes at a time */		// + Reason here? (=because of the coding + encoding)
     for (byte = 0; byte < mappedFile.fileSize; byte += 5) {
 
         /* !!! */
@@ -255,15 +275,12 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
         /* If  amount of characters to be printed is greater than buffer,
         then generate characters in chunks */
         if (length > bufferSize) {
-            //printBuffer(&buffer);
-			printf("Print buffer\n");
+            printBuffer(&buffer);
             for (page = 0; page < length; page += bufferSize) {
                 if (length - page < bufferSize) {
-					printf("if\n");
 					add = length - page;
                 }
                 else {
-					printf("else\n");
 					add = bufferSize;
                 }
 
@@ -278,28 +295,24 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
 				for (i = string->stringLength; i < add + string->stringLength; i++) {
 					string->stringData[i] = character;
 				}
-				printf("I'm here\n");
 				string->stringLength += add;
 
-                //printBuffer(&buffer);
+                printBuffer(&buffer);
             }
         }
         /* !!!!!!!!!!!!!!!!!! */
         else if (buffer.stringLength + length > bufferSize) {
-            //createChars(&buffer, character, length);
+            createChars(&buffer, character, length, bufferSize);
         }
         /* If there is still room in the buffer, just generate characters */
         else {
-            //createChars(&buffer, character, length);
+            createChars(&buffer, character, length, bufferSize);
         }
     }
-    /* If there is character left in the buffer print them */
+    /* If there are characters left in the buffer, print them */
     if (buffer.stringLength > 0) {
-		printf("final if\n");
-        //printBuffer(&buffer);
+        printBuffer(&buffer);
     }
-
-	printf("end\n");
 }
 
 /*******************************************************************/
