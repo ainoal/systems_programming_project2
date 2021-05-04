@@ -14,7 +14,7 @@ void readFile (char *fileName) {
 	FILE *fp;
 
 	if ((fp = fopen(fileName, "r")) == NULL) {
-		perror("my-cat: cannot open file\n");
+		fprintf(stderr, "my-cat: cannot open file\n");
 		exit(1);
 	}
  

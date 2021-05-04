@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Read user-specified file and print all the lines that include the search term */
 void grepFile(char *searchterm, char *fileName) {
 	FILE *fp;
 	char *buffer;
@@ -17,12 +18,12 @@ void grepFile(char *searchterm, char *fileName) {
 	size_t bufferSize = 32;
 
 	if((buffer = (char *)malloc(bufferSize * sizeof(char))) == NULL) {
-		perror("Malloc error\n");
+		fprintf(stderr, "my-grep: malloc failed\n");
 		exit(1);
 	}
 
 	if ((fp = fopen(fileName, "r")) == NULL) {
-		perror("my-grep: cannot open file\n");
+		fprintf(stderr, "my-grep: cannot open file\n");
 		exit(1);
 	}
 	
@@ -48,7 +49,7 @@ void grepStdio(char *searchterm) {
 	size_t bufferSize = 32;
 
 	if((buffer = (char *)malloc(bufferSize * sizeof(char))) == NULL) {
-		perror("Malloc error\n");
+		fprintf(stderr, "my-grep: malloc failed\n");
 		exit(1);
 	}
 	
@@ -64,7 +65,7 @@ int main (int argc, char *argv[]) {
 	int i;
 
 	if(argc == 1) {
-		perror("my-grep: searchterm [file...]\n");
+		fprintf(stderr, "my-grep: searchterm [file...]\n");
 		exit(1);
 	} 
 	else if(argc == 2) {
