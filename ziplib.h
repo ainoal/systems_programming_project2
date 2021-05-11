@@ -48,8 +48,8 @@ unsigned long long getUsableMemory();
 MAPPED_FILE mapRead(char fileName[]);
 
 void allocate(RLE_LIST *rleList, int initialSize);
-void appendRleList(RLE_LIST* rleList, RLE* rle);
-void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile);
+void appendRleList(RLE_LIST* rleList, RLE* rle, unsigned long long maxMemory);
+void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile, unsigned long long maxMemory);
 
 void allocateString(STRING* string, int initialSize);
 void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize);

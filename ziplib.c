@@ -17,6 +17,9 @@
 
 #include "ziplib.h"
 
+/*******************************************************************/
+/* General functions */
+
 /* Reference: 
 https://stackoverflow.com/questions/2513505/how-to-get-available-memory-c-g/26639774 */
 unsigned long long getUsableMemory() {
@@ -86,7 +89,7 @@ void allocate(RLE_LIST *rleList, int initialSize) {
 	printf("Calloc finished\n");
 }
 
-void appendRleList(RLE_LIST* rleList, RLE* rle) {
+void appendRleList(RLE_LIST* rleList, RLE* rle, unsigned long long maxMemory) {
 	int newSize;
 
 	/* Make sure that there is enough space for a new RLE element */
@@ -96,10 +99,14 @@ void appendRleList(RLE_LIST* rleList, RLE* rle) {
 		/* !!! */
 		newSize = (rleList->listLength + 1) * sizeof(RLE*);
 
-		/*if ((rleList->rleData = (RLE*)realloc(rleList->rleData, newSize)) == NULL) {
+		if (newSize > maxMemory / sizeof(RLE*)) {
+		    newSize = (int)(maxMemory / sizeof(RLE*));
+		}
+		
+		if ((rleList->rleData = (RLE*)realloc(rleList->rleData, newSize)) == NULL) {
 			perror("Realloc error");
 			exit(1);
-		}*/
+		}
 
 		/* Update new physical size in structs */
 		rleList->listSize = newSize / sizeof(RLE*);
@@ -112,7 +119,7 @@ void appendRleList(RLE_LIST* rleList, RLE* rle) {
 }
 
 /* The actual paging and zipping of the file(s) */
-void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile) {
+void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile, unsigned long long maxMemory) {
     long start = 0;
     long end = 0;
 	RLE element;
@@ -161,7 +168,7 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
 		        element.character = letter;
 		        element.charAmount = count;
 		        /* Add struct to list of structs. */
-		        appendRleList(output, &element);
+		        appendRleList(output, &element, maxMemory);
 		        count = 0;
 		        letter = letters[position];
 		    }
@@ -172,7 +179,7 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile)
 		    element.character = letters[end];
 		    element.charAmount = count;
 			/* Add struct to list of structs. */
-		    appendRleList(output, &element);
+		    appendRleList(output, &element, maxMemory);
 		}
 
 
