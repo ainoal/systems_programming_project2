@@ -13,9 +13,21 @@
 /* The highest quota of system memory allowed to be used */
 #define MAX_MEMORY_USAGE 0.1
 
+/* Disable padding in struct Rle with pragma pack
+https://stackoverflow.com/questions/3318410/pragma-pack-effect */
+#pragma pack (push,1)
 struct Rle {
 	int charAmount;
 	char character;
+};
+
+typedef struct Rle RLE;
+#pragma pack(pop)
+
+struct RleList {
+	RLE *rleData;
+	long listSize;		// Physical size of the list
+	long listLength;	// Length in nodes
 };
 
 struct MappedFile {
@@ -29,20 +41,9 @@ struct String {
     int stringLength;	// Virtual size of the string
 };
 
-typedef struct Rle RLE;
+typedef struct RleList RLE_LIST;
 typedef struct MappedFile MAPPED_FILE;
 typedef struct String STRING;
-
-/* Disable padding in struct RleList with pragma pack
-https://stackoverflow.com/questions/3318410/pragma-pack-effect */
-#pragma pack (push,1)
-struct RleList {
-	RLE *rleData;
-	long listSize;		// Physical size of the list
-	long listLength;	// Length in nodes
-}; 
-typedef struct RleList RLE_LIST;
-#pragma pack(pop)
 
 unsigned long long getUsableMemory();
 MAPPED_FILE mapRead(char fileName[]);
