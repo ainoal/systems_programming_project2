@@ -2,7 +2,7 @@
 /* CT30A3370 Käyttöjärjestelmät ja systeemiohjelmointi
  * ziplib.c
  * Aino Liukkonen
- * 25.4.2021
+ * 13.5.2021
  */
 /*******************************************************************/
 
@@ -25,13 +25,13 @@ unsigned long long getUsableMemory() {
 
 	pages = sysconf(_SC_PHYS_PAGES);
 	pageSize = sysconf(_SC_PAGE_SIZE);
-	
 	memory = pages * pageSize * MAX_MEMORY_USAGE;
 
     return memory;
 }
 
-/* Function to map file to memory.
+/* Function to map file to memory. File mapping associates the contents 
+ * of a file with a portion of the virtual address space of the calling process.
  * Source of inspiration: https://gist.github.com/marcetcheverry/991042 */
 MAPPED_FILE mapRead(char fileName[]) {    
     struct stat fileInfo = {0};
@@ -81,6 +81,7 @@ void allocate(RLE_LIST *rleList, int initialSize) {
     }
 }
 
+/* Add RLE struct to the list of structs. */
 void appendRleList(RLE_LIST* rleList, RLE* rle, unsigned long long maxMemory) {
 	int newSize;
 	int len;
@@ -112,9 +113,9 @@ void appendRleList(RLE_LIST* rleList, RLE* rle, unsigned long long maxMemory) {
 }
 
 /* The actual paging and zipping of the file(s) */
-void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile, unsigned long long maxMemory) {
-    long start = 0;
-    long end = 0;
+void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int isLastFile, unsigned long long maxMemory) {
+	long start = 0;
+	long end = 0;
 	RLE element;
 	char letter;
 	int count;
@@ -124,10 +125,11 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile,
 
     while (TRUE) {
         /* Calculate start and end position based on the page. */
-        if (end != 0) {
+        if (end == 0) {
+			start = 0;
             start = end + 1;
         } else {
-            start = 0;
+            start = end + 1;
         }
 
         if (pageSize < mappedFile->fileSize - end) {
@@ -136,56 +138,57 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile,
             end = mappedFile->fileSize;
         }
 
-		/* Compress given string with Run Length Encoding. */
+		/* Compress string with RLE */
 
 		letters = mappedFile->fileData;
 
-		/* */
+		/* If there is already data in rleList 'output', continue from the last item */
 		if (output->listLength > 0) {
 			len = output->listLength - 1;
-		    letter = output->rleData[len].character;
-		    count = output->rleData[len].charAmount;
-		    output->listLength = 0;
+			letter = output->rleData[len].character;
+			count = output->rleData[len].charAmount;
+			output->listLength = 0;
 		}
 		else {
-		    letter = letters[start];
-		    count = 0;
+			letter = letters[start];
+			count = 0;
 		}
-		/*  */
+		/* Compare current and previous characters. Count how many of the same characters 
+		 * there are in a row */
 		for (position = start; position <= end; position++) {
-		    if (letters[position] != letter) {
-		        element.character = letter;
-		        element.charAmount = count;
-		        /* Add struct to list of structs. */
-		        appendRleList(output, &element, maxMemory);
-		        count = 0;
-		        letter = letters[position];
-		    }
-		    count++;
+			if (letters[position] != letter) {
+				element.character = letter;
+				element.charAmount = count;
+				appendRleList(output, &element, maxMemory);
+				count = 0;
+				letter = letters[position];
+			}
+			count++;
 		}
-		/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+		/* If there are multiple pages */
 		if (letters[end] != '\0') {
 		    element.character = letters[end];
 		    element.charAmount = count;
-			/* Add struct to list of structs. */
 		    appendRleList(output, &element, maxMemory);
 		}
 
 
         if (end < mappedFile->fileSize) {
 			
-            /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+            /* This is not the end of file. When writing to output, leave the last element 
+			 * out because the latest character needs to be compared to the next one */
             if (output->listLength > 1) {
                 fwrite(output->rleData, sizeof(RLE), output->listLength - 1, stdout);
             }
         }
         else {
-			/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-            if (lastFile == FALSE) {
+			/* When zipping multiple files at once, if this is not the last file to zip, 
+ 			 * don't write the last element to output because the last character of the file 
+			 * needs to be compared  to the first character of the next file. */
+            if (isLastFile == FALSE) {
             	fwrite(output->rleData, sizeof(RLE), output->listLength - 1, stdout);
             }
             else {
-                /* Write all bytes */
 				fwrite(output->rleData, sizeof(RLE), output->listLength, stdout);
             }
             break;
@@ -206,14 +209,14 @@ void allocateString(STRING *string, int initialSize) {
     }
 }
 
-void expandString(STRING* string, int reqSize, unsigned long long maxMemory) {
+void expandString(STRING* string, int bufferSize, unsigned long long maxMemory) {
 	int newSize;
 
-    if (reqSize > maxMemory) {
+    if (bufferSize > maxMemory) {
         printf("Can't allocate more than defined max memory\n");
         exit(1);
     }
-    newSize = reqSize * sizeof(char*);
+    newSize = bufferSize * sizeof(char*);
     if (newSize > maxMemory / sizeof(char*)) {
         newSize = (int)(maxMemory / sizeof(char*));
     }
@@ -234,11 +237,11 @@ void printBuffer(STRING *string) {
 void createChars(STRING* string, char character, int charAmount, unsigned long long maxMemory) {
 	int i;
 
-    /* Expand string if needed for generated letters */
+    /* Expand string if it is needed for generated characters */
     if (charAmount > string->stringSize - string->stringLength) {
         expandString(string, string->stringLength + charAmount, maxMemory);
     }
-    /* Generate letters */
+    /* Generate characters */
     for (i = string->stringLength; i < charAmount + string->stringLength; i++) {
         string->stringData[i] = character;
     }
@@ -257,7 +260,8 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
 	int add;
 	int i;
 
-    /* Proceed two 5 bytes at a time */		// + Reason here? (=because of the coding + encoding)
+    /* Proceed two 5 bytes at a time  because the zipped files consist of
+	 * 5-byte entries */
     for (byte = 0; byte < mappedFile.fileSize; byte += 5) {
 
         /* !!! */
@@ -295,17 +299,19 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
                 printBuffer(&buffer);
             }
         }
-        /* !!!!!!!!!!!!!!!!!! */
+        /* If the amount of characters is smaller than buffer, but buffer
+		 * is full, then print buffer first and create characters after that */
         else if (buffer.stringLength + length > bufferSize) {
 			printBuffer(&buffer);
             createChars(&buffer, character, length, bufferSize);
         }
-        /*  */
+        /* If there is space in buffer, only create characters */
         else {
             createChars(&buffer, character, length, bufferSize);
         }
     }
-    /*  */
+
+    /* If there are still characters in the buffer, print them out */
     if (buffer.stringLength > 0) {
         printBuffer(&buffer);
     }

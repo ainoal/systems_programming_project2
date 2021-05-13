@@ -2,7 +2,7 @@
 /* CT30A3370 Käyttöjärjestelmät ja systeemiohjelmointi
  * my-zip.c
  * Aino Liukkonen
- * 25.4.2021
+ * 13.5.2021
  */
 /*******************************************************************/
 

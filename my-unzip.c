@@ -2,7 +2,7 @@
 /* CT30A3370 Käyttöjärjestelmät ja systeemiohjelmointi
  * ziplib.c
  * Aino Liukkonen
- * 26.4.2021
+ * 13.5.2021
  */
 /*******************************************************************/
 
