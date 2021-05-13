@@ -292,7 +292,7 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
 				}
 
 				/* Create letters */
-				for (i = string->stringLength; i < add + string->stringLength; i++) {
+				for (i = string->stringLength; i < string->stringLength + add; i++) {
 					string->stringData[i] = character;
 				}
 				string->stringLength += add;
