@@ -41,13 +41,13 @@ MAPPED_FILE mapRead(char fileName[]) {
 	int iFile;
     
     if ((iFile = open(fileName, O_RDONLY)) == 0) {
-        perror("my-zip: error opening file");					// !!!!!!!!!!!!!!!!!!!!!!!!
+		fprintf(stderr, "Error opening file\n");
         exit(1);
     }     
     
 	/* Get file size */
     if (fstat(iFile, &fileInfo) == -1) {
-        perror("Error getting the file size");
+		fprintf(stderr, "Error getting the file size\n");
         exit(1);
     }
     
@@ -61,7 +61,7 @@ MAPPED_FILE mapRead(char fileName[]) {
 
     if (mappedFile.fileData == MAP_FAILED) {
         close(iFile);
-        perror("Error mmapping the file");
+		fprintf(stderr, "Error mapping the file to memory\n");
         exit(1);
     }
 
@@ -78,7 +78,7 @@ void allocate(RLE_LIST *rleList, int initialSize) {
     rleList->listSize = initialSize;
     rleList->listLength = 0;
     if ((rleList->rleData = (RLE*)calloc(initialSize, sizeof(RLE))) == NULL) {
-        perror("Calloc failed");								// !!!!!!!!!!!!!!!!!!!!!
+		fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
 }
@@ -98,7 +98,7 @@ void appendRleList(RLE_LIST* rleList, RLE* rle, unsigned long long maxMemory) {
 		    newSize = (int)(maxMemory / sizeof(RLE*));
 		}
 		if ((rleList->rleData = (RLE*)realloc(rleList->rleData, newSize)) == NULL) {
-			perror("Realloc error");
+			fprintf(stderr, "Memory allocation failed\n");
 			exit(1);
 		}
 
@@ -123,8 +123,6 @@ void zip(MAPPED_FILE *mappedFile, RLE_LIST *output, long pageSize, int lastFile,
 	int position;
 	char *letters;
 	int len;
-
-	//printf("zipping\n");
 
     while (TRUE) {
         /* Calculate start and end position based on the page. */
@@ -205,7 +203,7 @@ void allocateString(STRING *string, int initialSize) {
     string->stringSize = initialSize;
     string->stringLength = 0;
     if ((string->stringData = (char*)calloc(initialSize, sizeof(char))) == NULL) {
-        perror("Calloc error");
+        fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
 }
@@ -223,7 +221,7 @@ void expandString(STRING* string, int reqSize, unsigned long long maxMemory) {
     }
 
     if ((string->stringData = (char*)realloc(string->stringData, newSize)) == NULL) {
-        printf("Cannot allocate more memory\n");
+        fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
     /* Update new physical size */
@@ -263,7 +261,6 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
 
     /* Proceed two 5 bytes at a time */		// + Reason here? (=because of the coding + encoding)
     for (byte = 0; byte < mappedFile.fileSize - 8; byte += 5) {
-		//printf("byte: %i\n", byte);
 
         /* !!! */
         pLength = (int*)(mappedFile.fileData + byte);

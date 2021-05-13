@@ -11,7 +11,7 @@
 #include <sys/mman.h>
 #include "ziplib.h"
 
-int main (int argc, char **argv) {
+int main (int argc, char *argv[]) {
 	unsigned long long maxMemory;
 	unsigned long long bufferSize;
 	MAPPED_FILE mappedFile;
