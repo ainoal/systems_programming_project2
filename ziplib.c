@@ -231,7 +231,6 @@ void expandString(STRING* string, int reqSize, unsigned long long maxMemory) {
 }
 
 void printBuffer(STRING *string) {
-    fwrite(string->stringData, sizeof(char), string->stringLength, stdout);
 	printf("%s", string->stringData);
     string->stringLength = 0;
 }
@@ -263,7 +262,8 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
 	int i;
 
     /* Proceed two 5 bytes at a time */		// + Reason here? (=because of the coding + encoding)
-    for (byte = 0; byte < mappedFile.fileSize / 2; byte += 5) {
+    for (byte = 0; byte < mappedFile.fileSize - 8; byte += 5) {
+		//printf("byte: %i\n", byte);
 
         /* !!! */
         pLength = (int*)(mappedFile.fileData + byte);
