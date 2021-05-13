@@ -23,26 +23,23 @@ int main (int argc, char *argv[]) {
 		exit(1);
 	}
 	else {
-		// TODO get "maxMemory" (a function already exists for that)
+		/* Get maximum usable memory */
 		maxMemory = getUsableMemory();
 
-		// TODO count max buffer size
+		/* Count maximum buffer size */
 		bufferSize = maxMemory / sizeof(RLE*) -1;
 
-		// TODO allocate memory for buffer
+		/* Allocate memory for buffer */
 		allocateString(&buffer, INITIAL_MEMORY);
 
-		// TODO map files (a function already exists for that)
-		/* Map files to memory */
         for (argNumber = 1; argNumber < argc; argNumber++) {
+			/* Map each file to memory */
             mappedFile = mapRead(argv[argNumber]);
 
-			// TODO unzip
+			/* unzip and unmap file */
 			unzip(mappedFile, buffer, bufferSize);
 			munmap(mappedFile.fileData, mappedFile.fileSize);
 		}
-
-		// TODO remember to free memory
 		free(buffer.stringData);
 	}
 

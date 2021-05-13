@@ -18,8 +18,6 @@
 /*******************************************************************/
 /* General functions */
 
-// TODO REMOVE ALL UNNECESSARY PRINTFS FROM BOTH ZIP POGRAMS
-
 /* Reference: 
 https://stackoverflow.com/questions/2513505/how-to-get-available-memory-c-g/26639774 */
 unsigned long long getUsableMemory() {
@@ -260,7 +258,7 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
 	int i;
 
     /* Proceed two 5 bytes at a time */		// + Reason here? (=because of the coding + encoding)
-    for (byte = 0; byte < mappedFile.fileSize - 8; byte += 5) {
+    for (byte = 0; byte < mappedFile.fileSize; byte += 5) {
 
         /* !!! */
         pLength = (int*)(mappedFile.fileData + byte);

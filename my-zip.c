@@ -25,14 +25,14 @@ int main (int argc, char *argv[]) {
 		exit(1);
 	}
 	else {
+		/* Get maximum usable memory */
 		maxMemory = getUsableMemory();
 
-		/*Allocate memory for rle list structs */
+		/*Allocate memory for rleList structs */
 		allocate(&output, INITIAL_MEMORY);
 
-		// TODO calculate max page size: BETTER EXPLANATION HERE!
-		pageSize = (long) (maxMemory / sizeof(RLE*) - 1);
-		//printf("Page size: %ld\n", pageSize); 	
+		/* Calculate maximum page size */
+		pageSize = (long) (maxMemory / sizeof(RLE*) - 1); 	
 
 		/* Map files to memory */
         for (argNumber = 1; argNumber < argc; argNumber++) {
@@ -40,28 +40,22 @@ int main (int argc, char *argv[]) {
 
             if (argNumber == argc - 1) {
 				/* This is the last file to be zipped
-				--> write all chars to output (for other files, don't write
-				 the last one because you need to compare it to the 1st char of 
-				the next file */
+				--> later, write all chars to output (for other files, don't
+				write the last one because you need to compare it to the 1st
+				char of the next file */
 				isLastFile = TRUE;
             }
 
 			/* Compress */
             zip(&mappedFile, &output, pageSize, isLastFile, maxMemory);
 
-			// TODO Remember to free memory
-
 			if (munmap(mappedFile.fileData, mappedFile.fileSize) == -1) {
 				fprintf(stderr, "Error unmapping file\n");
 				exit(1);
 			}
         }
-
-		// TODO Free memory
+		free(output.rleData);
 	}
-
-	printf("The end\n");
-
 	return 0;
 }
 
