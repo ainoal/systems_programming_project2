@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 #include "ziplib.h"
 
 int main (int argc, char **argv) {
@@ -38,11 +39,11 @@ int main (int argc, char **argv) {
 
 			// TODO unzip
 			unzip(mappedFile, buffer, bufferSize);
+			munmap(mappedFile.fileData, mappedFile.fileSize);
 		}
 
-
-
 		// TODO remember to free memory
+		free(buffer.stringData);
 	}
 
 	return 0;

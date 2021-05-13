@@ -217,7 +217,7 @@ void expandString(STRING* string, int reqSize, unsigned long long maxMemory) {
         printf("Can't allocate more than defined max memory\n");
         exit(1);
     }
-    newSize = reqSize * sizeof(char*) * 2;
+    newSize = reqSize * sizeof(char*);
     if (newSize > maxMemory / sizeof(char*)) {
         newSize = (int)(maxMemory / sizeof(char*));
     }
@@ -276,7 +276,7 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
         then generate characters in chunks */
         if (length > bufferSize) {
             printBuffer(&buffer);
-            for (page = 0; page < length; page += bufferSize) {
+  c          for (page = 0; page < length; page += bufferSize) {
                 if (length - page < bufferSize) {
 					add = length - page;
                 }
@@ -304,12 +304,12 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
         else if (buffer.stringLength + length > bufferSize) {
             createChars(&buffer, character, length, bufferSize);
         }
-        /* If there is still room in the buffer, just generate characters */
+        /*  */
         else {
             createChars(&buffer, character, length, bufferSize);
         }
     }
-    /* If there are characters left in the buffer, print them */
+    /*  */
     if (buffer.stringLength > 0) {
         printBuffer(&buffer);
     }
