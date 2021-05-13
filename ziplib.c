@@ -263,7 +263,7 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
 	int i;
 
     /* Proceed two 5 bytes at a time */		// + Reason here? (=because of the coding + encoding)
-    for (byte = 0; byte < mappedFile.fileSize; byte += 5) {
+    for (byte = 0; byte < mappedFile.fileSize / 2; byte += 5) {
 
         /* !!! */
         pLength = (int*)(mappedFile.fileData + byte);
@@ -276,7 +276,7 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
         then generate characters in chunks */
         if (length > bufferSize) {
             printBuffer(&buffer);
-  c          for (page = 0; page < length; page += bufferSize) {
+            for (page = 0; page < length; page += bufferSize) {
                 if (length - page < bufferSize) {
 					add = length - page;
                 }
@@ -302,6 +302,7 @@ void unzip(MAPPED_FILE mappedFile, STRING buffer, unsigned long long bufferSize)
         }
         /* !!!!!!!!!!!!!!!!!! */
         else if (buffer.stringLength + length > bufferSize) {
+			printBuffer(&buffer);
             createChars(&buffer, character, length, bufferSize);
         }
         /*  */
